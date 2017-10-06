@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shxt.modual.privilege.domain.Privilege">
+	<!-- 基本 -->
+	<resultMap type="com.shxt.modual.privilege.domain.Privilege" id="base">
+		<id column="privilege_id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="url" property="url"/>
+		<result column="level" property="level"/>
+		<result column="parent_id" property="parent_id"/>
+	</resultMap>
+	
+	<sql id="base">
+		privilege_id,name,url,level,parent_id
+	</sql>
+	<sql id="ailas">
+		${a}.privilege_id, ${a}.name, ${a}.url, ${a}.level, ${a}.parent_id
+	</sql>
+	
+	<!-- 根据用户获取对应的权限 -->
+	<select id="listByUserinfo" resultMap="base">
+		SELECT <include refid="ailas"><property name="a" value="p"/></include>
+		FROM privilege p
+		WHERE privilege_id IN(
+			SELECT rpr.privilege_id FROM role_privilege_r rpr WHERE rpr.role_id IN(
+				SELECT urr.role_id FROM userinfo_role_r urr WHERE urr.userinfo_id = #{userinfo_id}
+			)
+		
+		)
+		ORDER BY p.level
+	</select>
+	
+</mapper>

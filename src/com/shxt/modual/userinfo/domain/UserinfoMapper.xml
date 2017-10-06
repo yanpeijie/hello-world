@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.shxt.modual.userinfo.domain.Userinfo">
+	<!-- 基本 -->
+	<resultMap type="com.shxt.modual.userinfo.domain.Userinfo" id="base">
+		<id column="userinfo_id" property="id"/>
+		<result column="realname" property="realname"/>
+		<result column="password" property="password"/>
+	</resultMap>
+	
+	<sql id="base">
+		userinfo_id,realname,password
+	</sql>
+	<sql id="ailas">
+		${a}.userinfo_id,${a}.realname
+	</sql>
+	
+	<!-- 查看 -->
+	<select id="list" resultMap="base">
+		SELECT <include refid="base"></include>
+		FROM role
+	</select>
+	
+	<!-- 根据角色查询拥有的用户 -->
+	<select id="listByRole" resultMap="base">
+		SELECT <include refid="ailas"><property name="a" value="u"/></include>
+		FROM userinfo u
+		WHERE u.userinfo_id IN(
+			SELECT userinfo_id
+			FROM userinfo_role_r 
+			WHERE role_id = #{role_id}
+		)
+	</select>
+	
+	
+	<!-- 根据角色查询没有的用户 -->
+	<select id="listByRoleNot" resultMap="base">
+		SELECT <include refid= "ailas"><property name="a" value="u"/></include>
+		FROM userinfo u
+		WHERE u.userinfo_id not IN(
+			SELECT userinfo_id
+			FROM userinfo_role_r 
+			WHERE role_id = #{role_id}
+		)
+	</select>
+	
+	<!-- 登录，根据账号密码查询 -->
+	<select id="queryByLogin" resultMap="base">
+		SELECT <include refid="base"></include>
+		FROM userinfo
+		WHERE account = #{account} AND password=#{password}
+	</select>
+	<!-- 注册用户 -->
+	<insert id="add">
+	INSERT INTO userinfo (userinfo_id,account,password) VALUE (#{id},#{account},#{password})
+	</insert>
+	<!-- 修改用户信息 -->
+	<update id="edit">
+	UPDATE userinfo SET realname=#{realname} WHERE userinfo_id=#{id}
+	</update>
+</mapper>
